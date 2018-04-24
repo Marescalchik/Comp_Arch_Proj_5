@@ -12,7 +12,7 @@ int main()
   printf ("Naive matrix multiplication (N = %d)\n", N);
 
   // iterate over cache organization: direct, twoway, fully
-  for (ii = DIRECT; ii <= DIRECT; ii++) {
+  for (ii = DIRECT; ii <= TWOWAY; ii++) {
     cache_org = ii; // set cache organization 
     printCacheOrg (cache_org);
     resetClock(); // reset clock and numMisses
