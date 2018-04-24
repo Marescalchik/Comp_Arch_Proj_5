@@ -54,14 +54,22 @@ int getData (int address)                // load
 	  if ((m.myCache.cblocks[index].tag == tag) &&				// Check to see if the tag in index slot of cache is the same as the tag of the data, 
 		  (m.myCache.cblocks[index].valid == 1))				// Also check to see if the data is valid.
 	  {
+			printf("CACHE HIT!\n");
 		  data = m.myCache.cblocks[index].data[wordAddress];	// If it is, then the desired data was in the cache. Take the data out from the position of the word (lower two bits.)
 		  m.myCache.cblocks[index].last_used = 0;				// set last_used for this position in the cache to 0
 		  clockX = clockX + 2;									// Increment clock by 2 (as per instructions for cache hit)
-	  }
+		}
 	  else
 	  {
+			printf("CACHE MISS!ADDING NEW BLOCK TO CACHE FROM ADDRESS %d\n", address);
 		  data = mm.blocks[address >> 2].data[wordAddress];		// If it's not in the cache, get data from the memory location in the address. Use lowest two bits for the location, 
-		  m.myCache.cblocks[index].last_used++;					// Increment the last time this was last used. It doesn't really *matter*
+		  m.myCache.cblocks[index].tag = tag;
+			m.myCache.cblocks[index].valid = 1;
+			for (int i = 0; i<4; i++)
+			{
+			m.myCache.cblocks[index].data[i] = mm.blocks[address >> 2].data[i];
+			}
+
 		  clockX = clockX + 100;
 		  numMisses++;
 	  }
@@ -77,17 +85,17 @@ int getData (int address)                // load
 	  unsigned int setnum = address & 0b01100;					// setnum = bits 2/3 of the address
 	  unsigned int tag = address & 0b11111110000;				// Tag = upper remaining (7) bits of the address
 	  unsigned int foundVal = 0;
-	  setnum = setnum >> 2;										// Shift index to proper location (2 to right)
-	  tag = tag >> 4;											// Shift tag to proper location (shift 4 to the right)
-		for (int j = 0; j < BLOCKS_IN_SET; j++)				// Starting at the 0th position in the set, search until the blocks/set - 1 position (aka, for two blocks, look at position 0 and 1)
+	  setnum = setnum >> 2;															// Shift index to proper location (2 to right)
+	  tag = tag >> 4;																		// Shift tag to proper location (shift 4 to the right)
+		for (int j = 0; j < BLOCKS_IN_SET; j++)						// Starting at the 0th position in the set, search until the blocks/set - 1 position (aka, for two blocks, look at position 0 and 1)
 		{ 
 			if ((m.myCache.cblocks[2*setnum + j].tag == tag) && (m.myCache.cblocks[2*setnum + j].valid == 1))				// If the tag in position 2*setnum+j, aka position 0/1 in set setnum, is a match then you take that data and store it.
 			{
 				printf("Twoway data found!");
-				data = m.myCache.cblocks[2 * setnum + j].data[wordAddress];	// Take data from that address in that block and store
-				m.myCache.cblocks[2 * setnum + j].last_used = 0;			// This was the most recently used address bit, so set it to 0!
-				clockX = clockX + 2;									// Increment clock by 2 as per instruction
-				foundVal = 1;											// Set flag bit.
+				data = m.myCache.cblocks[2 * setnum + j].data[wordAddress];			// Take data from that address in that block and store
+				m.myCache.cblocks[2 * setnum + j].last_used = 0;								// This was the most recently used address bit, so set it to 0!
+				clockX = clockX + 2;																						// Increment clock by 2 as per instruction
+				foundVal = 1;																										// Set flag bit.
 			}
 			else if (j == (BLOCKS_IN_SET - 1))
 			{
